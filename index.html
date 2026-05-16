@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EchoDraft — Писательская среда</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-sidebar: #ffffff;
+            --bg-card: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --border-color: #e0e0e0;
+            --accent-color: #10a37f;
+            --accent-hover: #0d8c6d;
+            --hover-color: #f5f5f5;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            --transition-speed: 0.3s;
+        }
+
+        .theme-dark {
+            --bg-primary: #1e1e1e;
+            --bg-secondary: #252525;
+            --bg-sidebar: #2d2d2d;
+            --bg-card: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --border-color: #404040;
+            --accent-color: #10a37f;
+            --accent-hover: #0d8c6d;
+            --hover-color: #3a3a3a;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .theme-black {
+            --bg-primary: #000000;
+            --bg-secondary: #111111;
+            --bg-sidebar: #000000;
+            --bg-card: #111111;
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --border-color: #333333;
+            --accent-color: #10a37f;
+            --accent-hover: #0d8c6d;
+            --hover-color: #222222;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Левый сайдбар с проектами */
+        .projects-sidebar {
+            width: 320px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: all var(--transition-speed);
+            z-index: 10;
+            position: relative;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .logo i {
+            color: var(--accent-color);
+            font-size: 22px;
+        }
+
+        .project-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            transition: all var(--transition-speed);
+        }
+
+        .action-btn:hover {
+            background-color: var(--hover-color);
+            border-color: var(--accent-color);
+        }
+
+        .new-project-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+        }
+
+        .new-project-btn:hover {
+            background-color: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        .projects-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .project-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-card:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .project-card.active {
+            border-color: var(--accent-color);
+            background-color: rgba(16, 163, 127, 0.1);
+        }
+
+        .project-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .project-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .project-card-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            opacity: 0;
+            transition: opacity var(--transition-speed);
+            display: flex;
+            gap: 4px;
+        }
+
+        .project-card:hover .project-card-actions {
+            opacity: 1;
+        }
+
+        .project-card-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 14px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        .project-card-btn:hover {
+            color: var(--accent-color);
+            background-color: rgba(16, 163, 127, 0.1);
+        }
+
+        .project-card-btn.delete:hover {
+            color: #ff4444;
+            background-color: rgba(255, 68, 68, 0.1);
+        }
+
+        /* Основная рабочая область */
+        .workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-primary);
+            transition: all var(--transition-speed);
+            position: relative;
+        }
+
+        .workspace-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--bg-primary);
+        }
+
+        .project-info h2 {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .project-info p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .theme-switcher {
+            display: flex;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .theme-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            background: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all var(--transition-speed);
+        }
+
+        .theme-btn.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .lang-switcher {
+            display: flex;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 4px;
+            margin-left: 8px;
+        }
+        .lang-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            background: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all var(--transition-speed);
+        }
+        .lang-btn.active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .save-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .save-status i {
+            color: #10a37f;
+        }
+
+        /* Содержимое проекта */
+        .project-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .chapters-sidebar {
+            width: 260px;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            transition: transform var(--transition-speed);
+        }
+
+        .chapters-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chapters-header h3 {
+            font-size: 16px;
+        }
+
+        .chapter-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .small-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color var(--transition-speed);
+        }
+
+        .small-btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .chapters-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .chapter-item {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            border: 1px solid transparent;
+            position: relative;
+        }
+
+        .chapter-item:hover {
+            background-color: var(--hover-color);
+        }
+
+        .chapter-item.active {
+            background-color: rgba(16, 163, 127, 0.1);
+            border-color: var(--accent-color);
+        }
+
+        .chapter-item .delete-chapter-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity var(--transition-speed);
+            font-size: 14px;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        .chapter-item:hover .delete-chapter-btn {
+            opacity: 1;
+        }
+
+        .chapter-item .delete-chapter-btn:hover {
+            color: #ff4444;
+            background-color: rgba(255, 68, 68, 0.1);
+        }
+
+        .chapter-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+            padding-right: 20px;
+        }
+
+        .chapter-date {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Область редактирования */
+        .editor-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            overflow: hidden;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chapter-title-input {
+            font-size: 24px;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            width: 70%;
+            padding: 5px 0;
+            border-bottom: 2px solid transparent;
+        }
+
+        .chapter-title-input:focus {
+            outline: none;
+            border-bottom-color: var(--accent-color);
+        }
+
+        .chapter-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--accent-color);
+        }
+
+        .editor-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .editor {
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 16px;
+            line-height: 1.6;
+            resize: none;
+            transition: all var(--transition-speed);
+        }
+
+        .editor:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.2);
+        }
+
+        .editor-toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            position: relative;
+            flex-wrap: wrap;
+        }
+
+        .editor-btn {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all var(--transition-speed);
+        }
+
+        .editor-btn:hover {
+            background-color: var(--hover-color);
+        }
+
+        .save-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: background-color var(--transition-speed);
+            margin-left: auto;
+        }
+
+        .save-btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        /* Модальное окно экспорта */
+        .export-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            display: none;
+        }
+
+        .export-modal.active {
+            display: flex;
+        }
+
+        .export-content {
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow);
+        }
+
+        .export-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .export-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .export-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .export-body {
+            padding: 20px;
+        }
+
+        .export-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .export-type-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        .export-type-btn {
+            flex: 1;
+            padding: 15px;
+            background-color: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+        }
+        .export-type-btn.active {
+            border-color: var(--accent-color);
+            background-color: rgba(16, 163, 127, 0.1);
+        }
+        .export-type-icon { font-size: 24px; margin-bottom: 10px; color: var(--accent-color); }
+        .export-type-title { font-weight: 600; margin-bottom: 5px; }
+        .export-type-desc { font-size: 13px; color: var(--text-secondary); }
+        .export-selection { margin-top: 20px; display: none; }
+        .export-selection.active { display: block; }
+        .project-selector, .chapter-selector {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .project-export-item, .chapter-export-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+        .project-export-item.active, .chapter-export-item.active {
+            background-color: rgba(16, 163, 127, 0.1);
+            border-left: 3px solid var(--accent-color);
+        }
+        .current-project-notice {
+            background-color: var(--bg-secondary);
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            border-left: 3px solid var(--accent-color);
+        }
+
+        /* Плавающее окно "Запомни" */
+        .remember-window {
+            position: fixed;
+            top: 100px;
+            left: 380px;
+            width: 500px;
+            height: 400px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            display: none;
+            resize: both;
+        }
+        .remember-window.active { display: flex; }
+        .remember-window-header {
+            padding: 12px 16px;
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+        }
+        .window-controls { display: flex; gap: 8px; }
+        .window-control-btn {
+            background: none; border: none; color: var(--text-secondary); cursor: pointer;
+            width: 28px; height: 28px; border-radius: 4px;
+        }
+        .remember-window-content { flex: 1; padding: 16px; overflow: auto; }
+        .remember-editor {
+            width: 100%; height: 100%; padding: 12px; border: 1px solid var(--border-color);
+            border-radius: 6px; background-color: var(--bg-primary); color: var(--text-primary);
+            font-size: 14px; resize: none;
+        }
+        .remember-window-footer {
+            padding: 12px 16px; border-top: 1px solid var(--border-color);
+            font-size: 12px; color: var(--text-secondary); text-align: right;
+        }
+
+        /* Панель символов */
+        .symbols-panel {
+            position: fixed;
+            top: 140px;
+            left: 620px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: 500px;
+            max-height: 500px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            resize: both;
+        }
+        .symbols-panel.active { display: flex; }
+        .symbols-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            cursor: move;
+            user-select: none;
+        }
+        .close-symbols-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-speed);
+        }
+        .close-symbols-btn:hover {
+            background-color: var(--hover-color);
+            color: var(--accent-color);
+        }
+        .symbols-body {
+            padding: 15px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .symbols-categories { display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap; }
+        .category-btn {
+            padding: 6px 12px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+        .category-btn:hover {
+            background-color: var(--hover-color);
+            border-color: var(--accent-color);
+        }
+        .category-btn.active { background-color: var(--accent-color); color: white; border-color: var(--accent-color); }
+        .symbols-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; margin-bottom: 15px; }
+        .symbol-btn {
+            width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+            background-color: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 6px; cursor: pointer;
+        }
+        .symbol-btn:hover { background-color: var(--hover-color); transform: scale(1.05); border-color: var(--accent-color); }
+        .symbol-info { font-size: 12px; color: var(--text-secondary); text-align: center; margin-top: 10px; }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;
+            z-index: 2000; display: none;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background-color: var(--bg-card); border-radius: 12px; width: 450px;
+            max-height: 80vh; overflow-y: auto; box-shadow: var(--shadow);
+        }
+        .modal-header { padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; }
+        .modal-body { padding: 20px; }
+        .modal-footer { padding: 20px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px; }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background-color: var(--bg-primary); color: var(--text-primary); }
+        .project-info-card { background-color: var(--bg-secondary); border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+        .project-info-item { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+
+        @media (max-width: 768px) {
+            .projects-sidebar { position: absolute; left: 0; transform: translateX(-100%); width: 280px; z-index: 20; }
+            .projects-sidebar.active { transform: translateX(0); }
+            .chapters-sidebar { position: absolute; left: 0; transform: translateX(-100%); z-index: 15; }
+            .chapters-sidebar.active { transform: translateX(0); }
+            .menu-toggle { display: flex; }
+            .symbols-grid { grid-template-columns: repeat(8, 1fr); }
+            .export-content, .modal-content { width: 90vw; }
+        }
+        .menu-toggle { display: none; background: none; border: none; color: var(--text-primary); font-size: 20px; cursor: pointer; margin-right: 12px; }
+        .saving { animation: savePulse 0.5s ease-in-out; }
+        @keyframes savePulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="projects-sidebar" id="projectsSidebar">
+        <div class="sidebar-header">
+            <div class="logo"><i class="fas fa-book-open"></i><span data-i18n="appName">EchoDraft</span></div>
+            <div class="project-actions">
+                <button class="action-btn" id="importProjectBtn"><i class="fas fa-folder-open"></i><span data-i18n="importBtn">Импорт</span></button>
+                <button class="action-btn new-project-btn" id="newProjectBtn"><i class="fas fa-plus"></i><span data-i18n="newBtn">Новый</span></button>
+            </div>
+        </div>
+        <div class="projects-list" id="projectsList"></div>
+    </div>
+
+    <div class="workspace">
+        <div class="workspace-header">
+            <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+            <div class="project-info">
+                <h2 id="currentProjectTitle">Мой первый проект</h2>
+                <p id="projectStats" data-i18n-placeholder="stats">0 глав • Последнее изменение: только что</p>
+            </div>
+            <div class="header-actions">
+                <div class="save-status"><i class="fas fa-check-circle"></i><span id="saveStatus" data-i18n="saveStatusDefault">Сохранить проект</span></div>
+                <div class="theme-switcher">
+                    <button class="theme-btn active" data-theme="light"><i class="fas fa-sun"></i><span>Светлая</span></button>
+                    <button class="theme-btn" data-theme="dark"><i class="fas fa-moon"></i><span>Тёмная</span></button>
+                    <button class="theme-btn" data-theme="black"><i class="fas fa-circle"></i><span>Чёрная</span></button>
+                </div>
+                <div class="lang-switcher">
+                    <button class="lang-btn" data-lang="ru">RU</button>
+                    <button class="lang-btn active" data-lang="en">EN</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="project-content">
+            <div class="chapters-sidebar" id="chaptersSidebar">
+                <div class="chapters-header"><h3 data-i18n="chaptersTitle">Главы</h3>
+                    <div class="chapter-actions">
+                        <button class="small-btn" id="exportBtn" title="Экспорт"><i class="fas fa-download"></i></button>
+                        <button class="small-btn" id="newChapterBtn"><i class="fas fa-plus"></i></button>
+                    </div>
+                </div>
+                <div class="chapters-list" id="chaptersList"></div>
+            </div>
+            <div class="editor-area">
+                <div class="editor-header">
+                    <input type="text" class="chapter-title-input" id="chapterTitleInput" data-i18n-placeholder="chapterTitlePlaceholder" placeholder="Название главы">
+                    <div class="chapter-stats">
+                        <div class="stat"><div class="stat-value" id="wordCount">0</div><div data-i18n="wordsLabel">слов</div></div>
+                        <div class="stat"><div class="stat-value" id="charCount">0</div><div data-i18n="charsLabel">символов</div></div>
+                        <div class="stat"><div class="stat-value" id="pageCount">0</div><div data-i18n="pagesLabel">страниц</div></div>
+                    </div>
+                </div>
+                <div class="editor-toolbar">
+                    <button class="editor-btn" data-format="bold"><i class="fas fa-bold"></i><span data-i18n="boldBtn">Жирный</span></button>
+                    <button class="editor-btn" data-format="italic"><i class="fas fa-italic"></i><span data-i18n="italicBtn">Курсив</span></button>
+                    <button class="editor-btn" id="rememberBtn"><i class="fas fa-sticky-note"></i><span data-i18n="rememberBtn">Запомни</span></button>
+                    <button class="editor-btn" id="symbolsBtn"><i class="fas fa-icons"></i><span data-i18n="symbolsBtn">Символы</span></button>
+                    <button class="save-btn" id="saveProjectBtn"><i class="fas fa-save"></i><span data-i18n="saveBtn">Сохранить проект</span></button>
+                </div>
+                <div class="symbols-panel" id="symbolsPanel"><div class="symbols-header" id="symbolsPanelHeader"><h3>Symbols</h3><button class="close-symbols-btn" id="closeSymbolsBtn"><i class="fas fa-times"></i></button></div><div class="symbols-body"><div class="symbols-categories" id="symbolCategories"></div><div class="symbols-grid" id="symbolsGrid"></div><div class="symbol-info">Click a symbol to insert it</div></div></div>
+                <div class="editor-container"><textarea class="editor" id="bookEditor" placeholder="Начните писать свою главу здесь..."></textarea></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="export-modal" id="exportModal"><div class="export-content"><div class="export-header"><h3>Экспорт</h3><button class="export-close" id="closeExportBtn"><i class="fas fa-times"></i></button></div><div class="export-body">...</div><div class="export-footer"><button class="editor-btn" id="cancelExportBtn">Отмена</button><button class="save-btn" id="confirmExportBtn">Экспорт</button></div></div></div>
+<div class="remember-window" id="rememberWindow"><div class="remember-window-header" id="rememberWindowHeader"><h3><i class="fas fa-sticky-note"></i> Запомни</h3><div class="window-controls"><button class="window-control-btn" id="minimizeRememberBtn"><i class="fas fa-minus"></i></button><button class="window-control-btn" id="closeRememberBtn"><i class="fas fa-times"></i></button></div></div><div class="remember-window-content"><textarea class="remember-editor" id="rememberEditor" placeholder="Записывайте идеи, персонажей..."></textarea></div><div class="remember-window-footer">Символов: <span id="rememberCharCount">0</span></div></div>
+<div class="modal-overlay" id="importModal"><div class="modal-content"><div class="modal-header"><h3>Импорт</h3><button class="modal-close" id="closeImportModalBtn"><i class="fas fa-times"></i></button></div><div class="modal-body"><div class="form-group"><input type="file" id="projectFileInput" accept=".ecdr,.echr"><textarea id="projectJsonInput" rows="4" placeholder="JSON"></textarea></div></div><div class="modal-footer"><button class="editor-btn" id="cancelImportBtn">Отмена</button><button class="save-btn" id="importProjectBtnConfirm">Импорт</button></div></div></div>
+<div class="modal-overlay" id="projectInfoModal"><div class="modal-content"><div class="modal-header"><h3>Информация</h3><button class="modal-close" id="closeProjectInfoBtn"><i class="fas fa-times"></i></button></div><div class="modal-body"><div class="project-info-card"><div class="project-info-item"><span>Название:</span><span id="infoProjectTitle"></span></div><div class="project-info-item"><span>Глав:</span><span id="infoChapterCount"></span></div></div><div class="form-group"><button class="editor-btn" id="duplicateProjectBtn">Создать копию</button><button class="editor-btn" id="deleteProjectBtnModal" style="color:#ff4444;">Удалить</button></div></div><div class="modal-footer"><button class="save-btn" id="closeProjectInfoBtn2">Закрыть</button></div></div></div>
+
+<script>
+    // ========== ПЕРЕВОДЫ ==========
+    const translations = {
+        ru: {
+            appName: "EchoDraft", importBtn: "Импорт", newBtn: "Новый", saveStatusDefault: "Сохранить проект",
+            chaptersTitle: "Главы", wordsLabel: "слов", charsLabel: "символов", pagesLabel: "страниц",
+            boldBtn: "Жирный", italicBtn: "Курсив", rememberBtn: "Запомни", symbolsBtn: "Символы", saveBtn: "Сохранить проект",
+            chapterTitlePlaceholder: "Название главы", exportModalTitle: "Экспорт", cancel: "Отмена",
+            confirmExport: "Экспорт", emptyProjects: "Нет проектов", emptyChapters: "Нет глав"
+        },
+        en: {
+            appName: "EchoDraft", importBtn: "Import", newBtn: "New", saveStatusDefault: "Save project",
+            chaptersTitle: "Chapters", wordsLabel: "words", charsLabel: "chars", pagesLabel: "pages",
+            boldBtn: "Bold", italicBtn: "Italic", rememberBtn: "Notes", symbolsBtn: "Symbols", saveBtn: "Save Project",
+            chapterTitlePlaceholder: "Chapter title", exportModalTitle: "Export", cancel: "Cancel",
+            confirmExport: "Export", emptyProjects: "No projects", emptyChapters: "No chapters"
+        }
+    };
+    let currentLang = 'en';
+    function updateUILanguage() {
+        const elements = document.querySelectorAll('[data-i18n]');
+        elements.forEach(el => { const key = el.dataset.i18n; if(translations[currentLang][key]) el.innerText = translations[currentLang][key]; });
+        const placeholders = document.querySelectorAll('[data-i18n-placeholder]');
+        placeholders.forEach(el => { const key = el.dataset.i18nPlaceholder; if(translations[currentLang][key]) el.placeholder = translations[currentLang][key]; });
+        document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.lang === currentLang));
+        if (document.getElementById('symbolsPanel')?.classList.contains('active')) {
+            renderSymbolCategories();
+        }
+    }
+
+    let projects = {}, chapters = {};
+    let currentProjectId = null, currentChapterId = null;
+    let isDragging = false, dragOffsetX = 0, dragOffsetY = 0;
+    let selectedExportProjectId = null, selectedExportChapterId = null, currentExportType = 'project';
+
+    function saveToStorage() { localStorage.setItem('echoDraftProjects', JSON.stringify({projects, chapters})); updateSaveStatus("Сохранено"); }
+    function loadStorage() { const data = localStorage.getItem('echoDraftProjects'); if(data) { const parsed = JSON.parse(data); projects = parsed.projects || {}; chapters = parsed.chapters || {}; } }
+    function updateSaveStatus(msg) { document.getElementById('saveStatus').innerText = msg; }
+    function showNotification(msg) { alert(msg); } // simple
+
+    function renderProjects() {
+        const container = document.getElementById('projectsList');
+        container.innerHTML = '';
+        Object.values(projects).forEach(p => {
+            const div = document.createElement('div'); div.className = `project-card ${p.id === currentProjectId ? 'active' : ''}`;
+            div.innerHTML = `<div class="project-title">${p.title}</div><div class="project-meta"><span>${p.chapters.length} глав</span><span>...</span></div><div class="project-card-actions"><button class="project-card-btn edit-btn"><i class="fas fa-pen"></i></button><button class="project-card-btn info-btn"><i class="fas fa-info"></i></button><button class="project-card-btn delete-btn"><i class="fas fa-trash"></i></button></div>`;
+            div.addEventListener('click', (e) => { if(!e.target.closest('.project-card-btn')) switchProject(p.id); });
+            div.querySelector('.edit-btn').addEventListener('click', (e) => { e.stopPropagation(); renameProject(p.id); });
+            div.querySelector('.info-btn').addEventListener('click', (e) => { e.stopPropagation(); showProjectInfo(p.id); });
+            div.querySelector('.delete-btn').addEventListener('click', (e) => { e.stopPropagation(); deleteProject(p.id); });
+            container.appendChild(div);
+        });
+    }
+    function renderChapters() {
+        const proj = projects[currentProjectId];
+        const list = document.getElementById('chaptersList');
+        if(!proj || !proj.chapters.length) { list.innerHTML = '<div style="padding:20px;text-align:center;">Нет глав</div>'; return; }
+        list.innerHTML = '';
+        proj.chapters.forEach(chId => {
+            const ch = chapters[chId]; if(!ch) return;
+            const div = document.createElement('div'); div.className = `chapter-item ${ch.id === currentChapterId ? 'active' : ''}`;
+            div.innerHTML = `<div class="chapter-title">${ch.title}</div><div class="chapter-date">${ch.lastEdited}</div><button class="delete-chapter-btn"><i class="fas fa-times"></i></button>`;
+            div.addEventListener('click', (e) => { if(!e.target.closest('.delete-chapter-btn')) switchChapter(ch.id); });
+            div.querySelector('.delete-chapter-btn').addEventListener('click', (e) => { e.stopPropagation(); deleteChapter(ch.id); });
+            list.appendChild(div);
+        });
+    }
+    function switchProject(id) { currentProjectId = id; const p = projects[id]; document.getElementById('currentProjectTitle').innerText = p.title; document.getElementById('projectStats').innerText = `${p.chapters.length} глав`; renderProjects(); renderChapters(); if(p.chapters.length) switchChapter(p.chapters[0]); else { currentChapterId = null; document.getElementById('chapterTitleInput').value = ''; document.getElementById('bookEditor').value = ''; } loadRememberNotes(); }
+    function switchChapter(id) { currentChapterId = id; const ch = chapters[id]; if(ch) { document.getElementById('chapterTitleInput').value = ch.title; document.getElementById('bookEditor').value = ch.content || ''; updateStats(); } renderChapters(); }
+    function loadChapter() { if(currentChapterId && chapters[currentChapterId]) { const ch = chapters[currentChapterId]; document.getElementById('chapterTitleInput').value = ch.title; document.getElementById('bookEditor').value = ch.content || ''; updateStats(); } }
+    function updateStats() { const text = document.getElementById('bookEditor').value; const words = text.trim().split(/\s+/).filter(w=>w).length; document.getElementById('wordCount').innerText = words; document.getElementById('charCount').innerText = text.length; document.getElementById('pageCount').innerText = Math.ceil(text.length/1800); }
+    function loadRememberNotes() { const proj = projects[currentProjectId]; document.getElementById('rememberEditor').value = proj?.remember || ''; updateRememberStats(); }
+    function updateRememberStats() { document.getElementById('rememberCharCount').innerText = document.getElementById('rememberEditor').value.length; }
+    function createNewProject() { const id = Date.now(); projects[id] = { id, title: `Новый проект ${Object.keys(projects).length+1}`, created: new Date().toISOString(), chapters: [], remember: "" }; saveToStorage(); switchProject(id); }
+    function createNewChapter() { if(!currentProjectId) return; const id = Date.now(); const title = `Глава ${projects[currentProjectId].chapters.length+1}`; chapters[id] = { id, projectId: currentProjectId, title, content: "", lastEdited: "Только что" }; projects[currentProjectId].chapters.push(id); saveToStorage(); renderChapters(); switchChapter(id); }
+    function deleteChapter(id) { if(!confirm("Удалить главу?")) return; const ch = chapters[id]; if(ch && projects[ch.projectId]) { projects[ch.projectId].chapters = projects[ch.projectId].chapters.filter(cid => cid !== id); delete chapters[id]; if(currentChapterId === id) { const proj = projects[currentProjectId]; if(proj.chapters.length) switchChapter(proj.chapters[0]); else { currentChapterId = null; document.getElementById('chapterTitleInput').value = ''; document.getElementById('bookEditor').value = ''; } } saveToStorage(); renderChapters(); } }
+    function deleteProject(id) { if(!confirm("Удалить проект?")) return; const proj = projects[id]; proj.chapters.forEach(cid => delete chapters[cid]); delete projects[id]; if(currentProjectId === id) { const keys = Object.keys(projects); if(keys.length) switchProject(parseInt(keys[0])); else createNewProject(); } saveToStorage(); renderProjects(); }
+    function renameProject(id) { const newName = prompt("Новое название", projects[id].title); if(newName) { projects[id].title = newName; saveToStorage(); renderProjects(); if(currentProjectId === id) document.getElementById('currentProjectTitle').innerText = newName; } }
+    function showProjectInfo(id) { const p = projects[id]; document.getElementById('infoProjectTitle').innerText = p.title; document.getElementById('infoChapterCount').innerText = p.chapters.length; document.getElementById('projectInfoModal').classList.add('active'); }
+    function exportProject(id) { const proj = projects[id]; const data = { type: "EchoDraft Project", project: { title: proj.title, chapters: proj.chapters.map(cid => ({ title: chapters[cid].title, content: chapters[cid].content })), remember: proj.remember } }; downloadJSON(data, `${proj.title}.ecdr`); }
+    function downloadJSON(obj, filename) { const blob = new Blob([JSON.stringify(obj,null,2)], {type:"application/json"}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click(); URL.revokeObjectURL(a.href); }
+    function importProjectFromJSON(jsonStr) { try { const data = JSON.parse(jsonStr); if(data.project) { const newId = Date.now(); projects[newId] = { id: newId, title: data.project.title + " (импорт)", created: new Date().toISOString(), chapters: [], remember: data.project.remember || "" }; data.project.chapters.forEach(ch => { const chId = Date.now()+Math.random(); chapters[chId] = { id: chId, projectId: newId, title: ch.title, content: ch.content || "", lastEdited: "Импорт" }; projects[newId].chapters.push(chId); }); saveToStorage(); switchProject(newId); showNotification("Импорт завершён"); } } catch(e) { alert("Ошибка JSON"); } }
+
+
+    // ===== Панель символов =====
+    const symbolsByCategory = {
+        popular: ['—','–','«','»','„','“','”','…','•','©','®','™','§','№','✓','★','☆','♥','→','←'],
+        math: ['±','×','÷','≈','≠','≤','≥','∞','√','∑','π','∆','∫','∂','∇','∈','∩','∪','⊂','⊃'],
+        currency: ['€','$','£','¥','₽','₴','₸','₺','₹','₿']
+    };
+
+    const categoryNames = {
+        ru: { popular: 'Популярные', math: 'Математика', currency: 'Валюты' },
+        en: { popular: 'Popular', math: 'Math', currency: 'Currency' }
+    };
+
+    let currentSymbolCategory = 'popular';
+
+    function renderSymbolCategories() {
+        const container = document.getElementById('symbolCategories');
+        if (!container) return;
+        container.innerHTML = '';
+
+        Object.keys(symbolsByCategory).forEach(category => {
+            const btn = document.createElement('button');
+            btn.className = 'category-btn' + (category === currentSymbolCategory ? ' active' : '');
+            btn.textContent = categoryNames[currentLang]?.[category] || category;
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                currentSymbolCategory = category;
+                renderSymbolCategories();
+                renderSymbols();
+            });
+            container.appendChild(btn);
+        });
+    }
+
+    function insertSymbol(symbol) {
+        const editor = document.getElementById('bookEditor');
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+        const value = editor.value;
+
+        editor.value = value.slice(0, start) + symbol + value.slice(end);
+        editor.selectionStart = editor.selectionEnd = start + symbol.length;
+        editor.focus();
+
+        if (currentChapterId && chapters[currentChapterId]) {
+            chapters[currentChapterId].content = editor.value;
+            chapters[currentChapterId].lastEdited = "Только что";
+        }
+
+        updateStats();
+    }
+
+    function renderSymbols() {
+        const grid = document.getElementById('symbolsGrid');
+        if (!grid) return;
+
+        grid.innerHTML = '';
+        (symbolsByCategory[currentSymbolCategory] || []).forEach(symbol => {
+            const btn = document.createElement('button');
+            btn.className = 'symbol-btn';
+            btn.type = 'button';
+            btn.textContent = symbol;
+            btn.title = symbol;
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                insertSymbol(symbol);
+            });
+            grid.appendChild(btn);
+        });
+    }
+
+    function toggleSymbolsPanel(e) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        const panel = document.getElementById('symbolsPanel');
+        const willOpen = !panel.classList.contains('active');
+
+        if (willOpen) {
+            renderSymbolCategories();
+            renderSymbols();
+        }
+
+        panel.classList.toggle('active', willOpen);
+    }
+
+    // event listeners
+    document.getElementById('newProjectBtn').onclick = createNewProject;
+    document.getElementById('newChapterBtn').onclick = createNewChapter;
+    document.getElementById('saveProjectBtn').onclick = saveToStorage;
+    document.getElementById('bookEditor').addEventListener('input', () => { if(currentChapterId && chapters[currentChapterId]) { chapters[currentChapterId].content = document.getElementById('bookEditor').value; chapters[currentChapterId].lastEdited = "Только что"; updateStats(); } });
+    document.getElementById('chapterTitleInput').addEventListener('input', () => { if(currentChapterId && chapters[currentChapterId]) chapters[currentChapterId].title = document.getElementById('chapterTitleInput').value; renderChapters(); });
+    document.getElementById('rememberEditor').addEventListener('input', () => { if(currentProjectId && projects[currentProjectId]) projects[currentProjectId].remember = document.getElementById('rememberEditor').value; updateRememberStats(); saveToStorage(); });
+    document.getElementById('rememberBtn').onclick = () => document.getElementById('rememberWindow').classList.toggle('active');
+    document.getElementById('closeRememberBtn').onclick = () => document.getElementById('rememberWindow').classList.remove('active');
+    document.getElementById('minimizeRememberBtn').onclick = () => document.getElementById('rememberWindow').classList.toggle('minimized');
+    const header = document.getElementById('rememberWindowHeader'); header.addEventListener('mousedown', (e) => { isDragging = true; dragOffsetX = e.clientX - document.getElementById('rememberWindow').offsetLeft; dragOffsetY = e.clientY - document.getElementById('rememberWindow').offsetTop; });
+    document.addEventListener('mousemove', (e) => { if(isDragging) { const win = document.getElementById('rememberWindow'); win.style.left = (e.clientX - dragOffsetX) + 'px'; win.style.top = (e.clientY - dragOffsetY) + 'px'; } });
+    document.addEventListener('mouseup', () => isDragging = false);
+    document.getElementById('exportBtn').onclick = () => { if(currentProjectId) exportProject(currentProjectId); else alert("Нет проекта"); };
+    document.getElementById('importProjectBtn').onclick = () => document.getElementById('importModal').classList.add('active');
+    document.getElementById('importProjectBtnConfirm').onclick = () => { const json = document.getElementById('projectJsonInput').value; if(json) importProjectFromJSON(json); else alert("Вставьте JSON"); document.getElementById('importModal').classList.remove('active'); };
+    document.getElementById('cancelImportBtn').onclick = () => document.getElementById('importModal').classList.remove('active');
+    document.getElementById('closeImportModalBtn').onclick = () => document.getElementById('importModal').classList.remove('active');
+    document.querySelectorAll('.modal-close, .export-close, #cancelExportBtn, #closeProjectInfoBtn, #closeProjectInfoBtn2').forEach(btn => btn.onclick = () => { document.querySelectorAll('.modal-overlay, .export-modal').forEach(m => m.classList.remove('active')); });
+    document.getElementById('duplicateProjectBtn').onclick = () => { if(currentProjectId) { const old = projects[currentProjectId]; const newId = Date.now(); projects[newId] = { ...old, id: newId, title: old.title + " (копия)", chapters: [...old.chapters], created: new Date().toISOString() }; saveToStorage(); switchProject(newId); document.getElementById('projectInfoModal').classList.remove('active'); } };
+    document.getElementById('deleteProjectBtnModal').onclick = () => { deleteProject(currentProjectId); document.getElementById('projectInfoModal').classList.remove('active'); };
+    document.querySelectorAll('.theme-btn').forEach(btn => btn.addEventListener('click', () => {
+        document.body.className = `theme-${btn.dataset.theme}`;
+        localStorage.setItem('echoDraftTheme', btn.dataset.theme);
+        document.querySelectorAll('.theme-btn').forEach(themeBtn => {
+            themeBtn.classList.toggle('active', themeBtn === btn);
+        });
+    }));
+    const savedTheme = localStorage.getItem('echoDraftTheme') || 'light'; document.querySelector(`.theme-btn[data-theme="${savedTheme}"]`)?.click();
+    document.querySelectorAll('.lang-btn').forEach(btn => btn.addEventListener('click', () => { currentLang = btn.dataset.lang; updateUILanguage(); }));
+
+    // Кнопки панели символов
+    document.getElementById('symbolsBtn').addEventListener('click', toggleSymbolsPanel);
+    document.getElementById('closeSymbolsBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        document.getElementById('symbolsPanel').classList.remove('active');
+    });
+
+    // Не закрывать панель при клике внутри неё
+    document.getElementById('symbolsPanel').addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
+    // Закрывать панель при клике вне её
+    document.addEventListener('click', (e) => {
+        const panel = document.getElementById('symbolsPanel');
+        const button = document.getElementById('symbolsBtn');
+
+        if (
+            panel.classList.contains('active') &&
+            !panel.contains(e.target) &&
+            !button.contains(e.target)
+        ) {
+            panel.classList.remove('active');
+        }
+    });
+
+
+    // Dragging for Symbols panel
+    let isDraggingSymbols = false;
+    let symbolsDragOffsetX = 0;
+    let symbolsDragOffsetY = 0;
+
+    const symbolsHeader = document.getElementById('symbolsPanelHeader');
+    symbolsHeader.addEventListener('mousedown', (e) => {
+        if (e.target.closest('#closeSymbolsBtn')) return;
+        const panel = document.getElementById('symbolsPanel');
+        isDraggingSymbols = true;
+        symbolsDragOffsetX = e.clientX - panel.offsetLeft;
+        symbolsDragOffsetY = e.clientY - panel.offsetTop;
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDraggingSymbols) return;
+        const panel = document.getElementById('symbolsPanel');
+        panel.style.left = (e.clientX - symbolsDragOffsetX) + 'px';
+        panel.style.top = (e.clientY - symbolsDragOffsetY) + 'px';
+    });
+
+    document.addEventListener('mouseup', () => {
+        isDraggingSymbols = false;
+    });
+
+
+        updateUILanguage();
+    function init() { loadStorage(); if(Object.keys(projects).length===0) createNewProject(); else switchProject(Object.keys(projects)[0]); }
+    init();
+</script>
+</body>
+</html>
